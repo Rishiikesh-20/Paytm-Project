@@ -1,4 +1,4 @@
-import JWT_SECRET from "./config";
+import {JWT_SECRET} from "./config.js";
 import jwt from "jsonwebtoken"
 const authMiddleware = (req,res,next)=>{
   const authHeader=req.headers.authorization;
@@ -16,10 +16,8 @@ const authMiddleware = (req,res,next)=>{
 
     next();
   }catch(err){
-    return res.status(403).json({});
+    return res.status(403).json({message : "Authencation error"});
   } 
 }
 
-module.exports={
-  authMiddleware
-}
+export default authMiddleware;

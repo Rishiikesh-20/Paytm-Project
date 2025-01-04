@@ -1,2 +1,1 @@
-const JWT_SECRET="rishisecret"
-module.exports=JWT_SECRET
+export  const JWT_SECRET="rishisecret"

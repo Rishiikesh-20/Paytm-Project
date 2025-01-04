@@ -1,7 +1,7 @@
 import express from "express";
-import userRouter from "./user";
-const router = express.Router();
+import {userRouter} from "./user.js";
+import { accountRouter } from "./account.js";
+export const mainRouter = express.Router();
 
-router.use('/user',userRouter)
-
-module.exports=router;
+mainRouter.use('/user',userRouter)
+mainRouter.use("/account",accountRouter);
