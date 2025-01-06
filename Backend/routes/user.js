@@ -146,13 +146,14 @@ userRouter.put("/",authMiddleware,async (req,res)=>{
 userRouter.get('/bulk',async (req,res)=>{
   const filter=req.query.filter || "";
   try{
-    const users=await User.find({
+    let users=await User.find({
       $or:[
         {firstName:{$regex:filter}},{lastName:{$regex:filter}}
       ]
     })
+    console.log(users);
     res.json({
-      user:users.map(user => [user._id,user.firstName,user.lastName])
+      users
     })
   }catch(e){
     console.log({Error:e});
@@ -166,7 +167,8 @@ userRouter.get('/getUser',authMiddleware,async(req,res)=>{
     const {balance}=await Account.findOne({userId:req.userId})
     user.balance=balance;
     console.log(user)
-    res.json({user});
+    console.log(balance);
+    res.json({user,balance});
   }catch(e){
     console.log(e);
     res.json({message:"Error while fetching the authorized user using token"})

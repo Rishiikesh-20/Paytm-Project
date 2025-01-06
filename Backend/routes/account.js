@@ -54,9 +54,10 @@ accountRouter.post("/transfer",authMiddleware,async (req,res)=>{
     })
 
   }catch(e){
+    console.log({Error:e})
     await session.abortTransaction();
-    res.status(400).json({
-      message:e
+    res.json({
+      message:""+e
     })
   }finally{
     await session.endSession();
