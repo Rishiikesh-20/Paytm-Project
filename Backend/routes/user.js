@@ -16,52 +16,59 @@ userRouter.post("/signin",async (req,res)=>{
 
   const signInSchema=zod.object({
     username:zod.string(),
-    password:zod.string(),
+    password:zod.string().min(1,"Password is not there"),
   })
 
   const body=req.body;
-  const {success}=signInSchema.safeParse(body);
+  const {success,error}=signInSchema.safeParse(body);
   if(!success){
-    res.json({message:"Wrong Inputs"});
+    res.json({message:"Incorrect inputs"});
   }
   else{
-    const user=await User.findOne({username:body.username});
-    const isMatch=await bcrypt.compare(body.password,user.password);
-    if(!user._id){
-      res.json({
-        message: "Error while logging in"
-      });
+    try{
+      const user=await User.findOne({username:body.username});
+      const isMatch=await bcrypt.compare(body.password,user.password);
+      if(!user._id){
+        res.json({
+          message: "Error while logging in"
+        });
+      }
+      else if(isMatch){
+        const token = jwt.sign({userId:user._id},JWT_SECRET);
+        res.json(
+          {
+            message:"User Logged in",
+            token:token
+          }
+        )
+      }else{
+        res.json({
+          message:"Wrong password"
+        })
+      }
+    }catch(e){
+      console.log({Error:e,error});
     }
-    else if(isMatch){
-      const token = jwt.sign({userId:user._id},JWT_SECRET);
-      res.json(
-        {
-          token:token
-        }
-      )
-    }else{
-      res.json({
-        message:"Wrong password"
-      })
-    }
+    
   }
 })
 
 userRouter.post("/signup",async (req,res)=>{
+  console.log(req.body);
   //console.log({Request:req});
   const signScehma=zod.object({
     username:zod.string(),
     firstName:zod.string(),
     lastName:zod.string(),
-    password:zod.string()
+    password:zod.string().min(1, "Password cannot be empty") 
   })
 
   const body=req.body;
-  const {success}=signScehma.safeParse(body);
+  const {success,error}=signScehma.safeParse(body);
   if(!success){
     return res.json({
       message:" Incorrect inputs",
-      u:body
+      error:error
     })
   }
   const user=await User.findOne({username:body.username});
@@ -74,27 +81,33 @@ userRouter.post("/signup",async (req,res)=>{
   let password=body.password;
 
   bcrypt.hash(password,saltrounds,async (err,hash)=>{
-    if(err){
-      console.log({Error:err});
+    try{
+      if(err){
+        console.log({Error:err});
+      }
+      else{
+        body.password=hash;
+        const dbUser=await User.create(body);
+  
+        await Account.create({
+          userId:dbUser._id,
+          balance:Math.random()*10000+1
+        })
+  
+        const token = jwt.sign({
+          userId:dbUser._id
+        },JWT_SECRET);
+      
+        res.json({
+          message:"User created successfully",
+          token:token
+        })
+      }
+    }catch(e){
+      console.log(JSON.stringify(e));
+      res.json({errors:e.errors})
     }
-    else{
-      body.password=hash;
-      const dbUser=await User.create(body);
-
-      await Account.create({
-        userId:dbUser._id,
-        balance:Math.random()*10000+1
-      })
-
-      const token = jwt.sign({
-        userId:dbUser._id
-      },JWT_SECRET);
     
-      res.json({
-        message:"User created successfully",
-        token:token
-      })
-    }
   })
 })
 
@@ -145,6 +158,19 @@ userRouter.get('/bulk',async (req,res)=>{
     console.log({Error:e});
     res.json({message:"Error while finding users"});
   } 
+})
+
+userRouter.get('/getUser',authMiddleware,async(req,res)=>{
+  try{
+    let user=await User.findOne({_id:req.userId});
+    const {balance}=await Account.findOne({userId:req.userId})
+    user.balance=balance;
+    console.log(user)
+    res.json({user});
+  }catch(e){
+    console.log(e);
+    res.json({message:"Error while fetching the authorized user using token"})
+  }
 })
 
 
