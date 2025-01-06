@@ -1,8 +1,9 @@
 
 import mongoose from "mongoose";
 import { object } from "zod";
-
-await mongoose.connect("mongodb+srv://rishiikeshsk:27SSw48YUUYdaRr6@cluster0.fkz5n.mongodb.net/Paytm")
+import dotenv from 'dotenv';
+dotenv.config();
+await mongoose.connect(process.env.DB_URL)
 
 const schema=new mongoose.Schema({
   username:{type:String,required:true,unique:true,trim:true,lowercase:true,minlength:3,maxlength:30},
