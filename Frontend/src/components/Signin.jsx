@@ -42,7 +42,7 @@ export default function Signin(){
           )}}/>
         <div className="text-gray-700 ">
           Don't have an account 
-          <a className="text-blue-700 underline ml-[3px] cursor-pointer" href="/signup">Signup</a>
+          <a className="text-blue-700 underline ml-[3px] cursor-pointer" href="/">Signup</a>
         </div>
       </form>
     </div>
